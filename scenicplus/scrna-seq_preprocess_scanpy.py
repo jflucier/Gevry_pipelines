@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
 
+
 def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filter, min_genes, min_cells, min_mean,
                           max_mean,
                           min_disp, max_value, n_neighbors, leiden_res, cpu, mem):
@@ -16,6 +17,7 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
 
     print(f"Setting execution to {cpu} threads and {mem}G")
     sc.settings.n_jobs = cpu
+    os.environ["NUMBA_NUM_THREADS"] = f"{cpu}"
     sc.settings.max_memory = mem
     outdir = f"{work_dir}/scRNA"
 
