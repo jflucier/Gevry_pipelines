@@ -84,12 +84,16 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     adata_ref = adata_ref[:, var_names]
     adata = adata[:, var_names]
     # calculate PCA embedding
+    print(f"Calculate PCA")
     sc.pp.pca(adata_ref)
     # calculate neighborhood graph
+    print(f"Calculate neighborhood graph")
     sc.pp.neighbors(adata_ref)
     # calculate umap embedding
+    print(f"Calculate umap embedding")
     sc.tl.umap(adata_ref)
     # run label transfer
+    print(f"Run label transfer")
     sc.tl.ingest(adata, adata_ref, obs='louvain')
     adata.obs.rename({'louvain': 'ingest_celltype_label'}, inplace=True, axis=1)
 
