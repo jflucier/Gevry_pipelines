@@ -14,6 +14,8 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     if not os.path.exists(os.path.join(work_dir, 'scRNA')):
         os.makedirs(os.path.join(work_dir, 'scRNA'))
 
+    outdir = f"{work_dir}/scRNA"
+
     print(f"reading input 10x h5 file")
     adata = sc.read_10x_h5(in_data)
     # adata.var_names_make_unique()
@@ -44,7 +46,7 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     axs[0].hlines(y=mito_filter, xmin=0, xmax=max(adata.obs['total_counts']), color='red', ls='dashed')
     axs[1].hlines(y=n_counts_filter, xmin=0, xmax=max(adata.obs['total_counts']), color='red', ls='dashed')
     fig.tight_layout()
-    plt.savefig(f"{work_dir}/qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
+    plt.savefig(f"{outdir}/qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
 
     print(f"Filtering all count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
     adata = adata[adata.obs.n_genes_by_counts < n_counts_filter, :]
@@ -95,19 +97,19 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     print(f"Generate cell type annotation plot cell_type_annotation_variance_ratio.png")
     sc.tl.pca(adata, svd_solver='arpack')
     sc.pl.pca_variance_ratio(adata, log=True)
-    plt.savefig(work_dir + '/cell_type_annotation_variance_ratio.png')
+    plt.savefig(f"{outdir}/cell_type_annotation_variance_ratio.png")
 
     print(f"Generate cell subgroups plot by label cell_subgroups.label.png")
     sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=10)
     sc.tl.umap(adata)
     sc.pl.umap(adata, color='ingest_celltype_label')
-    plt.savefig(work_dir + '/cell_subgroups.label.png')
+    plt.savefig(f"{outdir}/cell_subgroups.label.png")
 
     # Cluster cells into subgroups using the Leiden algorithm
     print(f"Clustering cells into subgroups using the Leiden algorithm")
     sc.tl.leiden(adata, resolution=leiden_res, key_added=f'leiden_res_{leiden_res}')
     sc.pl.umap(adata, color=f'leiden_res_{leiden_res}')
-    plt.savefig(f'{work_dir}/cell_subgroups.leiden{leiden_res}.png')
+    plt.savefig(f'{outdir}/cell_subgroups.leiden{leiden_res}.png')
 
     print(f"TEST: reannotate some groups")
     tmp_df = adata.obs.groupby([f'leiden_res_{leiden_res}', 'ingest_celltype_label']).size().unstack(fill_value=0)
@@ -123,11 +125,11 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     print(f"Generate cell subgroups plot by cell type cell_subgroups.celltype.png")
     adata.obs['celltype'] = [leiden_to_annotation[cluster_id] for cluster_id in adata.obs['leiden_res_0.8']]
     sc.pl.umap(adata, color='celltype')
-    plt.savefig(work_dir + '/cell_subgroups.celltype.png', bbox_inches="tight")
+    plt.savefig(f"{outdir}/cell_subgroups.celltype.png", bbox_inches="tight")
 
     # Save results
-    print(f"Saving data object in {work_dir}/scRNA/adata.h5ad")
-    adata.write(os.path.join(work_dir, 'scRNA/adata.h5ad'), compression='gzip')
+    print(f"Saving data object in {outdir}/adata.h5ad")
+    adata.write(os.path.join(outdir, 'adata.h5ad'), compression='gzip')
 
 
 if __name__ == '__main__':
