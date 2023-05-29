@@ -4,7 +4,7 @@ import scanpy as sc
 import matplotlib.pyplot as plt
 
 sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
-
+sc.settings.autoshow = False
 
 def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filter, min_genes, min_cells, min_mean,
                           max_mean,
@@ -18,6 +18,9 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     print(f"Setting execution to {cpu} threads and {mem}G")
     sc.settings.n_jobs = cpu
     os.environ["NUMBA_NUM_THREADS"] = f"{cpu}"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1"
+    os.environ["OMP_NUM_THREADS"] = "1"
     sc.settings.max_memory = mem
     outdir = f"{work_dir}/scRNA"
 
