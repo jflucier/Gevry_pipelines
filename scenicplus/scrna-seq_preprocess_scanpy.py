@@ -2,6 +2,7 @@ import os
 import argparse
 import scanpy as sc
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
@@ -17,8 +18,8 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
         os.makedirs(os.path.join(work_dir, 'scRNA'))
 
     print(f"Setting execution to {cpu} threads and {mem}G")
-    # sc.settings.n_jobs = cpu
-    # sc.settings.max_memory = mem
+    sc.settings.n_jobs = cpu
+    sc.settings.max_memory = mem
     outdir = f"{work_dir}/scRNA"
 
     print(f"reading input 10x h5 file")
@@ -70,7 +71,7 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     # Cell type annotation
     # use the preprocessed data from the Scanpy tutorial as reference
     # adata_ref = sc.datasets.pbmc3k_processed()
-    print(f"Perform cell type annotation using mtx dir {mtx_dir}")
+    print(f"Perform cell type annotation using reference data mtx dir {mtx_dir}")
     adata_ref = sc.read_10x_mtx(
         # the directory with the `.mtx` file. Tuto data taken from
         # https://cf.10xgenomics.com/samples/cell-exp/1.1.0/pbmc3k/pbmc3k_raw_gene_bc_matrices.tar.gz
@@ -81,8 +82,31 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
         cache=True,
     )
     adata_ref.var_names_make_unique()  # this is unnecessary if using 'gene_ids'
-    # adata.write('write/pbmc3k_raw.h5ad', compression='gzip')
 
+    print(f"Filtering ref data using min_genes {min_genes} & min_cells {min_cells}")
+    sc.pp.filter_cells(adata_ref, min_genes=min_genes)
+    sc.pp.filter_genes(adata_ref, min_cells=min_cells)
+
+    adata_ref.var['mt'] = adata_ref.var_names.str.startswith('MT-')
+    sc.pp.calculate_qc_metrics(adata_ref, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
+
+    print(f"Filtering reference count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
+    adata_ref = adata_ref[adata_ref.obs.n_genes_by_counts < n_counts_filter, :]
+    adata_ref = adata_ref[adata_ref.obs.pct_counts_mt < mito_filter, :]
+
+    print(f"Identify highly-variable genes.")
+    sc.pp.normalize_total(adata_ref, target_sum=1e4)
+    sc.pp.log1p(adata_ref)
+    sc.pp.highly_variable_genes(adata_ref, min_mean=0.0125, max_mean=3, min_disp=0.5)
+    sc.pl.highly_variable_genes(adata_ref)
+    adata_ref = adata_ref[:, adata_ref.var.highly_variable]
+    sc.tl.pca(adata_ref, svd_solver='arpack')
+    sc.pp.neighbors(adata_ref, n_neighbors=n_neighbors, n_pcs=10)
+
+    # read file https://raw.githubusercontent.com/chanzuckerberg/cellxgene/main/example-dataset/pbmc3k.h5ad
+    # adata_ref = sc.datasets.pbmc3k_processed()  # use the preprocessed data from the Scanpy tutorial as reference
+    zzz = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
+    print(f"{zzz}")
     # use genes which are present in both assays
     print(f"Crossing count data with annotation data using gene symbols")
     var_names = adata_ref.var_names.intersection(adata.var_names)
@@ -99,6 +123,7 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     # calculate umap embedding
     print(f"Calculate umap embedding")
     sc.tl.umap(adata_ref)
+    sc.tl.louvain(adata_ref)
     yy = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
     print(f"{yy}")
 

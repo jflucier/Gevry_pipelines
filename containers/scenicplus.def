@@ -85,5 +85,6 @@ From: ubuntu:22.04
     pip install -e .
 
     conda install --channel conda-forge numpy=1.23.5 --force
+    pip install louvain
     
 
