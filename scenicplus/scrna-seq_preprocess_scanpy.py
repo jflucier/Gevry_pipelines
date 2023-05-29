@@ -15,8 +15,8 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
         os.makedirs(os.path.join(work_dir, 'scRNA'))
 
     print(f"Setting execution to {cpu} threads and {mem}G")
-    sc.settings.ScanpyConfig.n_jobs = cpu
-    sc.settings.ScanpyConfig.max_memory = mem
+    sc.settings.n_jobs = cpu
+    sc.settings.max_memory = mem
     outdir = f"{work_dir}/scRNA"
 
     print(f"reading input 10x h5 file")
