@@ -1,6 +1,7 @@
 import os
 import argparse
 import scanpy as sc
+import pandas as pd
 import matplotlib.pyplot as plt
 
 sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
