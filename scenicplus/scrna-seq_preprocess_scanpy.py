@@ -3,17 +3,20 @@ import argparse
 import scanpy as sc
 import matplotlib.pyplot as plt
 
+sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
 
 def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filter, min_genes, min_cells, min_mean,
                           max_mean,
-                          min_disp, max_value, n_neighbors, leiden_res):
-    # scRNA-seq preprocessing using Scanpy
-    sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
+                          min_disp, max_value, n_neighbors, leiden_res, cpu, mem):
 
+    # scRNA-seq preprocessing using Scanpy
     print(f"initialisation of variable and output folder {work_dir}/scRNA")
     if not os.path.exists(os.path.join(work_dir, 'scRNA')):
         os.makedirs(os.path.join(work_dir, 'scRNA'))
 
+    print(f"Setting execution to {cpu} threads and {mem}G")
+    sc.settings.ScanpyConfig.n_jobs = cpu
+    sc.settings.ScanpyConfig.max_memory = mem
     outdir = f"{work_dir}/scRNA"
 
     print(f"reading input 10x h5 file")
@@ -143,7 +146,12 @@ if __name__ == '__main__':
     argParser.add_argument("-w", "--workdir", help="your working directory", required=True)
     argParser.add_argument("-i", "--input", help="your h5 input file", required=True)
     argParser.add_argument("-mtx", "--mtx_dir", help="directory with the mtx file from 10x genomic", required=True)
-    # mtx_dir = /home/jflucier/Documents/service/biologie/gevry/programs/scenicplus/pbmc_tutorial/data/raw_gene_bc_matrices/hg19
+    argParser.add_argument("--cpu", nargs='?',
+                           help="Number of cpu to use", const=24,
+                           type=int, default=24)
+    argParser.add_argument("--mem", nargs='?',
+                           help="Max memery usage in Gigabyte", const=30,
+                           type=int, default=30)
 
     # qc
     argParser.add_argument("--qc_min_genes", nargs='?',
@@ -207,5 +215,7 @@ if __name__ == '__main__':
         args.norm_min_disp,
         args.norm_max_value,
         args.ct_annot_n_neighbors,
-        args.ct_annot_leiden_res
+        args.ct_annot_leiden_res,
+        args.cpu,
+        args.mem
     )
