@@ -93,9 +93,14 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     # calculate neighborhood graph
     print(f"Calculate neighborhood graph")
     sc.pp.neighbors(adata_ref)
+    zz = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
+    print(f"{zz}")
     # calculate umap embedding
     print(f"Calculate umap embedding")
     sc.tl.umap(adata_ref)
+    yy = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
+    print(f"{yy}")
+
     # run label transfer
     print(f"Run label transfer")
     sc.tl.ingest(adata, adata_ref, obs='louvain')
