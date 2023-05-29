@@ -79,6 +79,8 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     # run label transfer
     sc.tl.ingest(adata, adata_ref, obs='louvain')
     adata.obs.rename({'louvain': 'ingest_celltype_label'}, inplace=True, axis=1)
+
+    # Let’s visualize the labels
     sc.tl.pca(adata, svd_solver='arpack')
     sc.pl.pca_variance_ratio(adata, log=True)
     plt.savefig(work_dir + '/cell_type_annotation_variance_ratio.png')
