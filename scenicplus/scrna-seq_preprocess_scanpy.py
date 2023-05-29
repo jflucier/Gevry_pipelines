@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='white')
 sc.settings.autoshow = False
 
+
 def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filter, min_genes, min_cells, min_mean,
                           max_mean,
                           min_disp, max_value, n_neighbors, leiden_res, cpu, mem):
-
     # scRNA-seq preprocessing using Scanpy
     print(f"initialisation of variable and output folder {work_dir}/scRNA")
     if not os.path.exists(os.path.join(work_dir, 'scRNA')):
@@ -24,48 +24,53 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
 
     print(f"reading input 10x h5 file")
     adata = sc.read_10x_h5(in_data)
+
     # adata.var_names_make_unique()
 
-    # Basic quality control
-    print(f"filtering input by min_genes {min_genes} & min_cells {min_cells}")
-    sc.pp.filter_cells(adata, min_genes=min_genes)
-    sc.pp.filter_genes(adata, min_cells=min_cells)
-    # Optionally, predict and filter out doublets using Scrublet.
-    # estimates doublets
-    print(f"Predicting and filtering out doublets using Scrublet.")
-    sc.external.pp.scrublet(adata)
-    # do the actual filtering
-    adata = adata[adata.obs['predicted_doublet'] == False]
-    # adata
+    def preprocess_data(d, lbl, activate_scrubblet):
 
-    # Filter based on mitochondrial counts and total counts.
-    # annotate the group of mitochondrial genes as 'mt'
-    print(f"Annotating the group of mitochondrial genes as 'mt'")
-    adata.var['mt'] = adata.var_names.str.startswith('MT-')
-    sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
+        # Basic quality control
+        print(f"filtering input by min_genes {min_genes} & min_cells {min_cells}")
+        sc.pp.filter_cells(d, min_genes=min_genes)
+        sc.pp.filter_genes(d, min_cells=min_cells)
 
-    print(f"Generating figure qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
-    fig, axs = plt.subplots(ncols=2, figsize=(8, 4))
-    sc.pl.scatter(adata, x='total_counts', y='pct_counts_mt', ax=axs[0], show=False)
-    sc.pl.scatter(adata, x='total_counts', y='n_genes_by_counts', ax=axs[1], show=False)
-    # draw horizontal red lines indicating thresholds.
-    axs[0].hlines(y=mito_filter, xmin=0, xmax=max(adata.obs['total_counts']), color='red', ls='dashed')
-    axs[1].hlines(y=n_counts_filter, xmin=0, xmax=max(adata.obs['total_counts']), color='red', ls='dashed')
-    fig.tight_layout()
-    plt.savefig(f"{outdir}/qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
+        if activate_scrubblet is True:
+            # estimates doublets
+            print(f"Predicting and filtering out doublets using Scrublet.")
+            sc.external.pp.scrublet(d)
+            # do the actual filtering
+            d = d[d.obs['predicted_doublet'] == False]
 
-    print(f"Filtering all count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
-    adata = adata[adata.obs.n_genes_by_counts < n_counts_filter, :]
-    adata = adata[adata.obs.pct_counts_mt < mito_filter, :]
+        # Filter based on mitochondrial counts and total counts.
+        # annotate the group of mitochondrial genes as 'mt'
+        print(f"Annotating the group of mitochondrial genes as 'mt'")
+        d.var['mt'] = d.var_names.str.startswith('MT-')
+        sc.pp.calculate_qc_metrics(d, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
 
-    # OPTIONNAL??? Data normalization for visualisation purpose
-    print(f"Backup filtered data.")
-    adata.raw = adata
-    print(f"Performing data normalisation")
-    sc.pp.normalize_total(adata, target_sum=1e4)
-    sc.pp.log1p(adata)
-    sc.pp.highly_variable_genes(adata, min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
-    adata = adata[:, adata.var.highly_variable]
+        print(f"Generating figure qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
+        fig, axs = plt.subplots(ncols=2, figsize=(8, 4))
+        sc.pl.scatter(d, x='total_counts', y='pct_counts_mt', ax=axs[0], show=False)
+        sc.pl.scatter(d, x='total_counts', y='n_genes_by_counts', ax=axs[1], show=False)
+        # draw horizontal red lines indicating thresholds.
+        axs[0].hlines(y=mito_filter, xmin=0, xmax=max(d.obs['total_counts']), color='red', ls='dashed')
+        axs[1].hlines(y=n_counts_filter, xmin=0, xmax=max(d.obs['total_counts']), color='red', ls='dashed')
+        fig.tight_layout()
+        plt.savefig(f"{outdir}/{lbl}_qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
+
+        print(f"Filtering all count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
+        d = d[d.obs.n_genes_by_counts < n_counts_filter, :]
+        d = d[d.obs.pct_counts_mt < mito_filter, :]
+
+        # OPTIONNAL??? Data normalization for visualisation purpose
+        # print(f"Backup filtered data.")
+        # adata.raw = adata
+        print(f"Performing data normalisation")
+        sc.pp.normalize_total(d, target_sum=1e4)
+        sc.pp.log1p(d)
+        sc.pp.highly_variable_genes(d, min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
+        return d[:, d.var.highly_variable]
+
+    adata = preprocess_data(adata, "adata", True)
     sc.pp.scale(adata, max_value=max_value)
 
     # Cell type annotation
@@ -82,50 +87,50 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
         cache=True,
     )
     adata_ref.var_names_make_unique()  # this is unnecessary if using 'gene_ids'
+    adata_ref = preprocess_data(adata_ref, "adata_ref", False)
 
-    print(f"Filtering ref data using min_genes {min_genes} & min_cells {min_cells}")
-    sc.pp.filter_cells(adata_ref, min_genes=min_genes)
-    sc.pp.filter_genes(adata_ref, min_cells=min_cells)
+    # print(f"Filtering ref data using min_genes {min_genes} & min_cells {min_cells}")
+    # sc.pp.filter_cells(adata_ref, min_genes=min_genes)
+    # sc.pp.filter_genes(adata_ref, min_cells=min_cells)
 
-    adata_ref.var['mt'] = adata_ref.var_names.str.startswith('MT-')
-    sc.pp.calculate_qc_metrics(adata_ref, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
+    # adata_ref.var['mt'] = adata_ref.var_names.str.startswith('MT-')
+    # sc.pp.calculate_qc_metrics(adata_ref, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
 
-    print(f"Filtering reference count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
-    adata_ref = adata_ref[adata_ref.obs.n_genes_by_counts < n_counts_filter, :]
-    adata_ref = adata_ref[adata_ref.obs.pct_counts_mt < mito_filter, :]
+    # print(f"Filtering reference count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
+    # adata_ref = adata_ref[adata_ref.obs.n_genes_by_counts < n_counts_filter, :]
+    # adata_ref = adata_ref[adata_ref.obs.pct_counts_mt < mito_filter, :]
 
-    print(f"Identify highly-variable genes.")
-    sc.pp.normalize_total(adata_ref, target_sum=1e4)
-    sc.pp.log1p(adata_ref)
-    sc.pp.highly_variable_genes(adata_ref, min_mean=0.0125, max_mean=3, min_disp=0.5)
-    sc.pl.highly_variable_genes(adata_ref)
-    adata_ref = adata_ref[:, adata_ref.var.highly_variable]
-    sc.tl.pca(adata_ref, svd_solver='arpack')
-    sc.pp.neighbors(adata_ref, n_neighbors=n_neighbors, n_pcs=10)
+    # print(f"Identify highly-variable genes.")
+    # sc.pp.normalize_total(adata_ref, target_sum=1e4)
+    # sc.pp.log1p(adata_ref)
+    # sc.pp.highly_variable_genes(adata_ref, min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
+    # sc.pl.highly_variable_genes(adata_ref)
+    # adata_ref = adata_ref[:, adata_ref.var.highly_variable]
+
+    ## maybe needed
+    # sc.tl.pca(adata_ref, svd_solver='arpack')
+    # sc.pp.neighbors(adata_ref, n_neighbors=n_neighbors, n_pcs=10)
 
     # read file https://raw.githubusercontent.com/chanzuckerberg/cellxgene/main/example-dataset/pbmc3k.h5ad
     # adata_ref = sc.datasets.pbmc3k_processed()  # use the preprocessed data from the Scanpy tutorial as reference
-    zzz = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
-    print(f"{zzz}")
-    # use genes which are present in both assays
-    print(f"Crossing count data with annotation data using gene symbols")
-    var_names = adata_ref.var_names.intersection(adata.var_names)
-    adata_ref = adata_ref[:, var_names]
-    adata = adata[:, var_names]
+
     # calculate PCA embedding
     print(f"Calculate PCA")
     sc.pp.pca(adata_ref)
     # calculate neighborhood graph
     print(f"Calculate neighborhood graph")
     sc.pp.neighbors(adata_ref)
-    zz = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
-    print(f"{zz}")
+
     # calculate umap embedding
     print(f"Calculate umap embedding")
     sc.tl.umap(adata_ref)
     sc.tl.louvain(adata_ref)
-    yy = pd.Series(map(len, adata_ref.obsp['distances'].tolil().rows)).value_counts()
-    print(f"{yy}")
+
+    # use genes which are present in both assays
+    print(f"Crossing count data with annotation data using gene symbols")
+    var_names = adata_ref.var_names.intersection(adata.var_names)
+    adata_ref = adata_ref[:, var_names]
+    adata = adata[:, var_names]
 
     # run label transfer
     print(f"Run label transfer")
