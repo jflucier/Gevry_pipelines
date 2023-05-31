@@ -477,6 +477,9 @@ if __name__ == '__main__':
                            help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
     argParser.add_argument("--scrna", nargs='?',
                            help=f"Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad", const="", default="")
+    argParser.add_argument("--cpu", nargs='?',
+                           help="Number of cpu to use", const=24,
+                           type=int, default=24)
 
     args = argParser.parse_args()
     # print("args=%s\n" % args)
@@ -488,7 +491,7 @@ if __name__ == '__main__':
         args.scrna = args.workdir + "/scRNA/adata.h5ad"
 
     sample_id = '10x_pbmc'
-    cpu = 2
+    cpu = args.cpu
 
     # To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73.
     shift = 73
