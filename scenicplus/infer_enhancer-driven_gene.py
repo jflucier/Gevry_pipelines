@@ -51,8 +51,7 @@ def test_ensembl_host(scplus_obj, host, species):
     return ov
 
 
-def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, sample_id, ensembl_specie, cpu, overwrite):
-    work_dir = '/home/def-gevrynic/programs/scenicplus/pbmc_tutorial'
+def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, tmp, sample_id, ensembl_specie, cpu, overwrite):
 
     # loading prev analysis
     adata = sc.read_h5ad(scrna_path)
@@ -121,8 +120,8 @@ def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, s
             export_to_loom_file=True,
             export_to_UCSC_file=True,
             path_bedToBigBed='/ucsc.v386',
-            n_cpu=12,
-            _temp_dir='/home/def-gevrynic/tmp'
+            n_cpu=cpu,
+            _temp_dir=tmp
         )
     except Exception as e:
         # in case of failure, still save the object
@@ -159,6 +158,8 @@ if __name__ == '__main__':
     argParser.add_argument("--menr", nargs='?',
                            help=f"menr object data pickle data. Defaults to <<workdir>>/motifs/menr.pkl",
                            const="", default="")
+    argParser.add_argument("--tmp", nargs='?',
+                           help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
 
     argParser.add_argument("--cpu", nargs='?',
                            help="Number of cpu to use", const=24,
@@ -179,6 +180,7 @@ if __name__ == '__main__':
     cpu = args.cpu
     overwrite = False
     sample_id = '10x_pbmc'
+    # Species from which data comes from. Possible values: 'hsapiens', 'mmusculus', 'dmelanogaster'
     ensembl_sp = 'hsapiens'
 
-    infer_enhancer_driven_gene(args.workdir, args.scrna, args.cistopic, args.menr, sample_id, ensembl_sp, cpu, overwrite)
+    infer_enhancer_driven_gene(args.workdir, args.scrna, args.cistopic, args.menr, args.tmp, sample_id, ensembl_sp, cpu, overwrite)

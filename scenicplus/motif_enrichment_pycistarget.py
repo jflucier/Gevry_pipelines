@@ -23,72 +23,76 @@ def run_motif_enrichment(work_dir, tmp_dir, otsu, top3k, markers, scores_db, ran
     # for the SCENIC+ analysis.
     # https://github.com/aertslab/create_cisTarget_databases
 
-    if os.path.isfile(os.path.join(work_dir, 'motifs/menr.pkl')) \
-            and not overwrite:
-        print(f"Reusing motif results")
-        menr = pickle.load(open(os.path.join(work_dir, 'motifs/menr.pkl'), 'rb'))
-    else:
+    # if os.path.isfile(os.path.join(work_dir, 'motifs/menr.pkl')) \
+    #         and not overwrite:
+    #     print(f"Reusing motif results")
+    #     menr = pickle.load(open(os.path.join(work_dir, 'motifs/menr.pkl'), 'rb'))
+    # else:
 
-        # use precomputed db
-        print(f"loading region_bin_topics_otsu: {otsu}")
-        region_bin_topics_otsu = pickle.load(open(otsu, 'rb'))
-        print(f"loading region_bin_topics_top3k: {top3k}")
-        region_bin_topics_top3k = pickle.load(open(top3k, 'rb'))
-        print(f"loading markers_dict: {markers}")
-        markers_dict = pickle.load(open(markers, 'rb'))
+    # use precomputed db
+    print(f"loading region_bin_topics_otsu: {otsu}")
+    region_bin_topics_otsu = pickle.load(open(otsu, 'rb'))
+    print(f"loading region_bin_topics_top3k: {top3k}")
+    region_bin_topics_top3k = pickle.load(open(top3k, 'rb'))
+    print(f"loading markers_dict: {markers}")
+    markers_dict = pickle.load(open(markers, 'rb'))
 
-        # Convert to dictionary of pyranges objects.
-        print(f"convert region to pyrange")
-        region_sets = {'topics_otsu': {}, 'topics_top_3': {}, 'DARs': {}}
-        for topic in region_bin_topics_otsu.keys():
-            regions = region_bin_topics_otsu[topic].index[
-                region_bin_topics_otsu[topic].index.str.startswith('chr')]  # only keep regions on known chromosomes
-            region_sets['topics_otsu'][topic] = pr.PyRanges(region_names_to_coordinates(regions))
+    # Convert to dictionary of pyranges objects.
+    print(f"convert region to pyrange")
+    region_sets = {'topics_otsu': {}, 'topics_top_3': {}, 'DARs': {}}
+    for topic in region_bin_topics_otsu.keys():
+        regions = region_bin_topics_otsu[topic].index[
+            region_bin_topics_otsu[topic].index.str.startswith('chr')]  # only keep regions on known chromosomes
+        region_sets['topics_otsu'][topic] = pr.PyRanges(region_names_to_coordinates(regions))
 
-        for topic in region_bin_topics_top3k.keys():
-            regions = region_bin_topics_top3k[topic].index[
-                region_bin_topics_top3k[topic].index.str.startswith('chr')]  # only keep regions on known chromosomes
-            region_sets['topics_top_3'][topic] = pr.PyRanges(region_names_to_coordinates(regions))
+    for topic in region_bin_topics_top3k.keys():
+        regions = region_bin_topics_top3k[topic].index[
+            region_bin_topics_top3k[topic].index.str.startswith('chr')]  # only keep regions on known chromosomes
+        region_sets['topics_top_3'][topic] = pr.PyRanges(region_names_to_coordinates(regions))
 
-        for DAR in markers_dict.keys():
-            regions = markers_dict[DAR].index[
-                markers_dict[DAR].index.str.startswith('chr')]  # only keep regions on known chromosomes
-            region_sets['DARs'][DAR] = pr.PyRanges(region_names_to_coordinates(regions))
+    for DAR in markers_dict.keys():
+        regions = markers_dict[DAR].index[
+            markers_dict[DAR].index.str.startswith('chr')]  # only keep regions on known chromosomes
+        region_sets['DARs'][DAR] = pr.PyRanges(region_names_to_coordinates(regions))
 
-        for key in region_sets.keys():
-            print(f'{key}: {region_sets[key].keys()}')
+    for key in region_sets.keys():
+        print(f'{key}: {region_sets[key].keys()}')
 
-        # Define rankings, score and motif annotation database.
+    # Define rankings, score and motif annotation database.
 
-        # rankings_db = os.path.join(work_dir, 'data/hg38_screen_v10_clust.regions_vs_motifs.rankings.feather')
-        # scores_db = os.path.join(work_dir, 'data/hg38_screen_v10_clust.regions_vs_motifs.scores.feather')
-        # # motif_annotation = os.path.join(work_dir, 'data/motifs-v10nr_clust-nr.hgnc-m0.001-o0.0.tbl')
-        # motif_annotation = os.path.join(work_dir, 'data/motifs-v10-nr.hgnc-m0.00001-o0.0.tbl')
+    # rankings_db = os.path.join(work_dir, 'data/hg38_screen_v10_clust.regions_vs_motifs.rankings.feather')
+    # scores_db = os.path.join(work_dir, 'data/hg38_screen_v10_clust.regions_vs_motifs.scores.feather')
+    # # motif_annotation = os.path.join(work_dir, 'data/motifs-v10nr_clust-nr.hgnc-m0.001-o0.0.tbl')
+    # motif_annotation = os.path.join(work_dir, 'data/motifs-v10-nr.hgnc-m0.00001-o0.0.tbl')
 
-        # run cistarget based and DEM based motif enrichment analysis with or without promoter regions.
-        if not os.path.exists(os.path.join(work_dir, 'motifs')):
-            os.makedirs(os.path.join(work_dir, 'motifs'))
+    # run cistarget based and DEM based motif enrichment analysis with or without promoter regions.
+    if not os.path.exists(os.path.join(work_dir, 'motifs')):
+        os.makedirs(os.path.join(work_dir, 'motifs'))
 
-        print(f"running pycistarget")
-        run_pycistarget(
-            region_sets=region_sets,
-            species=species,
-            save_path=os.path.join(work_dir, 'motifs'),
-            ctx_db_path=rankings_db,
-            dem_db_path=scores_db,
-            path_to_motif_annotations=motif_annotation,
-            run_without_promoters=True,
-            n_cpu=cpu,
-            _temp_dir=os.path.join(tmp_dir, 'ray_spill'),
-            annotation_version=motifs_version
-        )
+    print(f"running pycistarget")
+    run_pycistarget(
+        region_sets=region_sets,
+        species=species,
+        save_path=os.path.join(work_dir, 'motifs'),
+        ctx_db_path=rankings_db,
+        dem_db_path=scores_db,
+        path_to_motif_annotations=motif_annotation,
+        run_without_promoters=True,
+        n_cpu=cpu,
+        _temp_dir=os.path.join(tmp_dir, 'ray_spill'),
+        annotation_version=motifs_version
+    )
 
     # explore some of the results. Below we show the motifs found for topic 8 (specific to B-cells) using DEM.
     # menr = dill.load(open(os.path.join(work_dir, 'motifs/menr.pkl'), 'rb'))
-    print(f"Output motif for each topics")
-    menr['DEM_topics_otsu_All'].DEM_results('Topic8')
-    with open(os.path.join(work_dir, 'fig10.html'), 'w') as f:
-        f.write(menr['DEM_topics_otsu_All'].DEM_results('Topic8').data)
+
+    # print(f"Loading motif results")
+    # menr = pickle.load(open(os.path.join(work_dir, 'motifs/menr.pkl'), 'rb'))
+
+    # print(f"Output motif for each topics")
+    # menr['DEM_topics_otsu_All'].DEM_results('Topic8')
+    # with open(os.path.join(work_dir, 'motifs/fig10.html'), 'w') as f:
+    #     f.write(menr['DEM_topics_otsu_All'].DEM_results('Topic8').data)
 
 
 if __name__ == '__main__':
@@ -153,7 +157,9 @@ if __name__ == '__main__':
 
     for k, v in vars(args).items():
         print(f"Input {k}: {v}")
-
+    
+    # Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus,
+    # drosophila_melanogaster and gallus_gallus.
     sp = 'homo_sapiens'
     cpu = args.cpu
     overwrite = False

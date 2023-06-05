@@ -468,14 +468,47 @@ if __name__ == '__main__':
 
     # mandatory
     argParser.add_argument("-w", "--workdir", help="your working directory", required=True)
+    argParser.add_argument("--sample", help="The sample id", required=True)
     argParser.add_argument("--frag_file", help="Path to ATAC fragments file", required=True)
     argParser.add_argument("--tmp", nargs='?',
                            help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
     argParser.add_argument("--scrna", nargs='?',
                            help=f"Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad", const="", default="")
-    argParser.add_argument("--cpu", nargs='?',
-                           help="Number of cpu to use", const=24,
-                           type=int, default=24)
+    argParser.add_argument(
+        "--cpu",
+        nargs='?',
+        help="Number of cpu to use",
+        const=24,
+        type=int,
+        default=24
+    )
+
+    argParser.add_argument(
+        "--shift",
+        nargs='?',
+        help="To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73.",
+        const=73,
+        type=int,
+        default=73
+    )
+
+    argParser.add_argument(
+        "--ext_size",
+        nargs='?',
+        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146.",
+        const=146,
+        type=int,
+        default=146
+    )
+
+    argParser.add_argument(
+        "--ext_size",
+        nargs='?',
+        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146.",
+        const=146,
+        type=int,
+        default=146
+    )
 
     args = argParser.parse_args()
     # print("args=%s\n" % args)
@@ -486,14 +519,14 @@ if __name__ == '__main__':
     if args.scrna == "":
         args.scrna = args.workdir + "/scRNA/adata.h5ad"
 
-    sample_id = '10x_pbmc'
-    cpu = args.cpu
+    # sample_id = '10x_pbmc'
+    # cpu = args.cpu
 
     # To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73.
-    shift = 73
+    # shift = 73
 
     # To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146.
-    ext_size = 146
+    # ext_size = 146
 
     # The q-value (minimum FDR) cutoff to call significant regions. Default: 0.05.
     q_value = 0.05
@@ -511,10 +544,10 @@ if __name__ == '__main__':
         args.tmp,
         args.frag_file,
         args.scrna,
-        sample_id,
-        cpu,
-        shift,
-        ext_size,
+        args.sample,
+        args.cpu,
+        args.shift,
+        args.ext_size,
         q_value,
         peak_half_width,
         path_to_blacklist,
