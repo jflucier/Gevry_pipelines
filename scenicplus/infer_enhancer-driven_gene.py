@@ -54,8 +54,11 @@ def test_ensembl_host(scplus_obj, host, species):
 def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, tmp, sample_id, ensembl_specie, cpu, overwrite):
 
     # loading prev analysis
+    print(f"reading scrna data {scrna_path}")
     adata = sc.read_h5ad(scrna_path)
+    print(f"reading cistopic data {cistopic_path}")
     cistopic_obj = pickle.load(open(cistopic_path, 'rb'))
+    print(f"reading motifs data {menr_path}")
     menr = pickle.load(open(menr_path, 'rb'))
 
     if os.path.isfile(os.path.join(work_dir, 'scenicplus/scplus_obj.1.pkl')) \
@@ -105,12 +108,13 @@ def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, t
 
     # run the analysis
     try:
+        print(f"Running scenicplus")
         run_scenicplus(
             scplus_obj=scplus_obj,
             variable=['GEX_celltype'],
             species='hsapiens',
             assembly='hg38',
-            tf_file='pbmc_tutorial/data/utoronto_human_tfs_v_1.01.txt',
+            tf_file=os.path.join(work_dir, 'data/utoronto_human_tfs_v_1.01.txt'),
             save_path=os.path.join(work_dir, 'scenicplus'),
             biomart_host=biomart_host,
             upstream=[1000, 150000],
@@ -131,6 +135,7 @@ def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, t
         )
         raise (e)
 
+    print(f"Ouputting results to tsv in {work_dir}/scenicplus")
     counts_df = scplus_obj.to_df('EXP')
     counts_df.to_csv(os.path.join(work_dir, 'scenicplus/gene_expression_counts.tsv'), sep="\t")
 

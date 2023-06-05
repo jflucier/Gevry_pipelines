@@ -103,6 +103,14 @@ if __name__ == '__main__':
     argParser.add_argument("--tmp", nargs='?',
                            help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
 
+    argParser.add_argument(
+        "--specie",
+        nargs='?',
+        help="Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster and gallus_gallus.",
+        const="homo_sapiens",
+        default="homo_sapiens"
+    )
+
     argParser.add_argument("--otsu", nargs='?', help="Path to region bin topic otsu pickle. Defaults to "
                                                      "<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl",
                            const="", default="")
@@ -134,6 +142,13 @@ if __name__ == '__main__':
     argParser.add_argument("--cpu", nargs='?',
                            help="Number of cpu to use", const=24,
                            type=int, default=24)
+    argParser.add_argument(
+        "--overwrite",
+        nargs='?',
+        help=f"Recalculate all steps even if they completed sucessfully.",
+        const=True,
+        default=False
+    )
 
     args = argParser.parse_args()
 
@@ -160,8 +175,21 @@ if __name__ == '__main__':
     
     # Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus,
     # drosophila_melanogaster and gallus_gallus.
-    sp = 'homo_sapiens'
-    cpu = args.cpu
-    overwrite = False
+    # sp = 'homo_sapiens'
+    # cpu = args.cpu
+    # overwrite = False
 
-    run_motif_enrichment(args.workdir, args.tmp, args.otsu, args.top3k, args.markers, args.scores_db, args.rank_db, args.motifs, args.motifs_version, sp, cpu, overwrite)
+    run_motif_enrichment(
+        args.workdir,
+        args.tmp,
+        args.otsu,
+        args.top3k,
+        args.markers,
+        args.scores_db,
+        args.rank_db,
+        args.motifs,
+        args.motifs_version,
+        args.specie,
+        args.cpu,
+        args.overwrite
+    )

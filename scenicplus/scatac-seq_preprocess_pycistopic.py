@@ -486,7 +486,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--shift",
         nargs='?',
-        help="To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73.",
+        help="To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73",
         const=73,
         type=int,
         default=73
@@ -495,19 +495,44 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--ext_size",
         nargs='?',
-        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146.",
+        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146",
         const=146,
         type=int,
         default=146
     )
 
     argParser.add_argument(
-        "--ext_size",
+        "--q_value",
         nargs='?',
-        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146.",
-        const=146,
+        help="The q-value (minimum FDR) cutoff to call significant regions. Default: 0.05",
+        const=0.05,
+        type=float,
+        default=0.05
+    )
+
+    argParser.add_argument(
+        "--peak_half_width",
+        nargs='?',
+        help="Number of base pairs that each summit will be extended in each direction. Default: 250",
+        const=250,
         type=int,
-        default=146
+        default=250
+    )
+
+    argParser.add_argument(
+        "--blacklist_regions",
+        nargs='?',
+        help=f"Path to bed file containing blacklist regions (Amemiya et al., 2019). Defaults to <<workdir>>/data/hg38-blacklist.v2.bed",
+        const="",
+        default=""
+    )
+
+    argParser.add_argument(
+        "--overwrite",
+        nargs='?',
+        help=f"Recalculate all steps even if they completed sucessfully.",
+        const=True,
+        default=False
     )
 
     args = argParser.parse_args()
@@ -519,6 +544,9 @@ if __name__ == '__main__':
     if args.scrna == "":
         args.scrna = args.workdir + "/scRNA/adata.h5ad"
 
+    if args.blacklist_regions == "":
+        args.blacklist_regions = args.workdir + "/data/hg38-blacklist.v2.bed"
+
     # sample_id = '10x_pbmc'
     # cpu = args.cpu
 
@@ -529,15 +557,15 @@ if __name__ == '__main__':
     # ext_size = 146
 
     # The q-value (minimum FDR) cutoff to call significant regions. Default: 0.05.
-    q_value = 0.05
+    # q_value = 0.05
 
     # for consensus peaks step
     # Number of base pairs that each summit will be extended in each direction.
-    peak_half_width = 250
+    # peak_half_width = 250
     # Path to bed file containing blacklist regions (Amemiya et al., 2019).
-    path_to_blacklist = args.workdir + '/data/hg38-blacklist.v2.bed'
+    # path_to_blacklist = args.workdir + '/data/hg38-blacklist.v2.bed'
 
-    overwrite = False
+    # overwrite = False
 
     run_scattac_precprocess(
         args.workdir,
@@ -548,8 +576,8 @@ if __name__ == '__main__':
         args.cpu,
         args.shift,
         args.ext_size,
-        q_value,
-        peak_half_width,
-        path_to_blacklist,
-        overwrite
+        args.q_value,
+        args.peak_half_width,
+        args.blacklist_regions,
+        args.overwrite
     )
