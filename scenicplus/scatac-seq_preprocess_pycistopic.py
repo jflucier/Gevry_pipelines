@@ -559,27 +559,27 @@ if __name__ == '__main__':
 
     args = argParser.parse_args()
 
-    match args.specie:
-        case "homo_sapiens":
-            args.specie = "hs"
-        case "mus_musculus":
-            args.specie = "mm"
-        case "drosophila_melanogaster":
-            args.specie = "dm"
-        case _:
-            print(
-                f"Unrecongnised specie provided: {args.specie}. Please provide one of the following: homo_sapiens, mus_musculus, drosophila_melanogaster.")
-            argParser.print_help()
-            exit(1)
-
-    for k, v in vars(args).items():
-        print(f"Input {k}: {v}")
+    if args.specie == "homo_sapiens":
+        args.specie = "hs"
+    elif args.specie == "mus_musculus":
+        args.specie = "mm"
+    elif args.specie == "drosophila_melanogaster":
+        args.specie = "dm"
+    else:
+        print(
+            f"Unrecongnised specie provided: {args.specie}. Please provide one of the following: homo_sapiens, mus_musculus, drosophila_melanogaster.")
+        argParser.print_help()
+        exit(1)
 
     if args.scrna == "":
         args.scrna = args.workdir + "/scRNA/adata.h5ad"
 
     if args.blacklist_regions == "":
         args.blacklist_regions = args.workdir + "/data/hg38-blacklist.v2.bed"
+
+    for k, v in vars(args).items():
+        print(f"Input {k}: {v}")
+
 
     # sample_id = '10x_pbmc'
     # cpu = args.cpu

@@ -174,7 +174,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--specie",
         nargs='?',
-        help="Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster and gallus_gallus.",
+        help="Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster.",
         const="homo_sapiens",
         default="homo_sapiens"
     )
@@ -196,21 +196,20 @@ if __name__ == '__main__':
     if args.menr == "":
         args.menr = args.workdir + "/motifs/menr.pkl"
 
-    match args.specie:
-        case "homo_sapiens":
-            args.specie = "hsapiens"
-            assembly = "hg38"
-        case "mus_musculus":
-            args.specie="mmusculus"
-            assembly = "mm10"
-        case "drosophila_melanogaster":
-            args.specie="dmelanogaster"
-        case "gallus_gallus":
-            args.specie = "ggallus"
-        case _:
-            print(f"Unrecongnised specie provided: {args.specie}. Please provide one of the following: homo_sapiens, mus_musculus, drosophila_melanogaster and gallus_gallus.")
-            argParser.print_help()
-            exit(1)
+    if args.specie == "homo_sapiens":
+        args.specie = "hsapiens"
+        assembly = "hg38"
+    elif args.specie == "mus_musculus":
+        args.specie = "mmusculus"
+        assembly = "mm10"
+    elif args.specie == "drosophila_melanogaster":
+        args.specie="dmelanogaster"
+        assembly = "dm6"
+    else:
+        print(
+            f"Unrecongnised specie provided: {args.specie}. Please provide one of the following: homo_sapiens, mus_musculus, drosophila_melanogaster.")
+        argParser.print_help()
+        exit(1)
 
     for k, v in vars(args).items():
         print(f"Input {k}: {v}")
