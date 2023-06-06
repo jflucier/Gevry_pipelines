@@ -112,7 +112,7 @@ def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, t
         run_scenicplus(
             scplus_obj=scplus_obj,
             variable=['GEX_celltype'],
-            species='hsapiens',
+            species=ensembl_specie,
             assembly='hg38',
             tf_file=os.path.join(work_dir, 'data/utoronto_human_tfs_v_1.01.txt'),
             save_path=os.path.join(work_dir, 'scenicplus'),
@@ -156,6 +156,7 @@ if __name__ == '__main__':
 
     # mandatory
     argParser.add_argument("-w", "--workdir", help="your working directory", required=True)
+    argParser.add_argument("--sample", help="The sample id", required=True)
     argParser.add_argument("--scrna", nargs='?',
                            help=f"Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad", const="", default="")
     argParser.add_argument("--cistopic", nargs='?',
@@ -170,6 +171,22 @@ if __name__ == '__main__':
                            help="Number of cpu to use", const=24,
                            type=int, default=24)
 
+    argParser.add_argument(
+        "--specie",
+        nargs='?',
+        help="Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster and gallus_gallus.",
+        const="homo_sapiens",
+        default="homo_sapiens"
+    )
+
+    argParser.add_argument(
+        "--overwrite",
+        nargs='?',
+        help=f"Recalculate all steps even if they completed sucessfully.",
+        const=True,
+        default=False
+    )
+
     args = argParser.parse_args()
 
     if args.scrna == "":
@@ -179,13 +196,39 @@ if __name__ == '__main__':
     if args.menr == "":
         args.menr = args.workdir + "/motifs/menr.pkl"
 
+    match args.specie:
+        case "homo_sapiens":
+            args.specie = "hsapiens"
+            assembly = "hg38"
+        case "mus_musculus":
+            args.specie="mmusculus"
+            assembly = "mm10"
+        case "drosophila_melanogaster":
+            args.specie="dmelanogaster"
+        case "gallus_gallus":
+            args.specie = "ggallus"
+        case _:
+            print(f"Unrecongnised specie provided: {args.specie}. Please provide one of the following: homo_sapiens, mus_musculus, drosophila_melanogaster and gallus_gallus.")
+            argParser.print_help()
+            exit(1)
+
     for k, v in vars(args).items():
         print(f"Input {k}: {v}")
 
-    cpu = args.cpu
-    overwrite = False
-    sample_id = '10x_pbmc'
+    # cpu = args.cpu
+    # overw= False
+    # sample_id = '10x_pbmc'
     # Species from which data comes from. Possible values: 'hsapiens', 'mmusculus', 'dmelanogaster'
-    ensembl_sp = 'hsapiens'
+    # ensembl_sp = 'hsapiens'
 
-    infer_enhancer_driven_gene(args.workdir, args.scrna, args.cistopic, args.menr, args.tmp, sample_id, ensembl_sp, cpu, overwrite)
+    infer_enhancer_driven_gene(
+        args.workdir,
+        args.scrna,
+        args.cistopic,
+        args.menr,
+        args.tmp,
+        args.sample,
+        args.specie,
+        args.cpu,
+        args.overwrite
+    )
