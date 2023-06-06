@@ -18,9 +18,21 @@ from pycisTopic.topic_binarization import *
 from pycisTopic.diff_features import *
 import matplotlib.pyplot as plt
 
+target_urls = {
+    'hs': 'http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes',
+    'mm': 'http://hgdownload.cse.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes',
+    'dm': 'http://hgdownload.cse.ucsc.edu/goldenPath/dm6/bigZips/dm6.chrom.sizes'
+}
 
-def get_chromsizes():
-    target_url = 'http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes'
+pbm_datasets = {
+    'hs': 'hsapiens_gene_ensembl',
+    'mm': 'mmusculus_gene_ensembl',
+    'dm': 'dmelanogaster_gene_ensembl'
+}
+
+
+def get_chromsizes(sp):
+    target_url = target_urls[sp]
     chromsizes = pd.read_csv(target_url, sep='\t', header=None)
     chromsizes.columns = ['Chromosome', 'End']
     chromsizes['Start'] = [0] * chromsizes.shape[0]
@@ -40,8 +52,8 @@ def get_chromsizes():
     return pr.PyRanges(chromsizes)
 
 
-def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna_sample_id, cpu, shift, ext_size, qval,
-                            peak_half_width, path_to_blacklist, overwrite):
+def run_scattac_preprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna_sample_id, cpu, shift, ext_size, qval,
+                            peak_half_width, path_to_blacklist, sp, overwrite):
     print(f"initialisation of variable and output folder {work_dir}/scATAC")
     if not os.path.exists(os.path.join(work_dir, 'scATAC')):
         os.makedirs(os.path.join(work_dir, 'scATAC'))
@@ -64,7 +76,7 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
 
     # Get chromosome sizes (for hg38 here)
     print(f"Get chromsize from UCSC")
-    chromsizes = get_chromsizes()
+    chromsizes = get_chromsizes(sp)
 
     if os.path.isfile(os.path.join(outdir, 'consensus_peak_calling/pseudobulk_bed_files/bed_paths.pkl')) \
             and not overwrite:
@@ -123,7 +135,7 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
             macs_path,
             bed_paths,
             os.path.join(outdir, 'consensus_peak_calling/MACS/'),
-            genome_size='hs',
+            genome_size=sp,
             n_cpu=cpu,
             input_format='BEDPE',
             shift=shift,
@@ -166,8 +178,8 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
         path_to_regions = {scrna_sample_id: os.path.join(outdir, 'consensus_peak_calling/consensus_regions.bed')}
     else:
         ###Quality control
-        print(f"QC using ensembl hsapiens_gene_ensembl")
-        dataset = pbm.Dataset(name='hsapiens_gene_ensembl', host='http://www.ensembl.org')
+        print(f"QC using ensembl {pbm_datasets[sp]}")
+        dataset = pbm.Dataset(name=pbm_datasets[sp], host='http://www.ensembl.org')
         annot = dataset.query(attributes=['chromosome_name', 'transcription_start_site', 'strand', 'external_gene_name',
                                           'transcript_biotype'])
         annot['Chromosome/scaffold name'] = annot['Chromosome/scaffold name'].to_numpy(dtype=str)
@@ -335,6 +347,9 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
         models = pickle.load(open(os.path.join(outdir, 'models/10x_pbmc_models_500_iter_LDA.pkl'), 'rb'))
     else:
         print(f"Run topic modeling.")
+        if not os.path.exists(os.path.join(outdir, 'models')):
+            os.makedirs(os.path.join(outdir, 'models'))
+
         models = run_cgs_models(
             cistopic_obj,
             n_topics=[2, 4, 10, 16, 32, 48],
@@ -345,12 +360,9 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
             alpha_by_topic=True,
             eta=0.1,
             eta_by_topic=False,
-            save_path=None,
+            save_path=os.path.join(outdir, 'models'),
             _temp_dir=os.path.join(tmp_dir + '/ray_spill')
         )
-
-        if not os.path.exists(os.path.join(outdir, 'models')):
-            os.makedirs(os.path.join(outdir, 'models'))
 
         print(f"Dumping models to pickle")
         pickle.dump(
@@ -366,7 +378,7 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
         print(f"Evaluate models")
         model = evaluate_models(
             models,
-            select_model=16,
+            select_model=None,
             return_model=True,
             metrics=['Arun_2010', 'Cao_Juan_2009', 'Minmo_2011', 'loglikelihood'],
             plot_metrics=False,
@@ -413,8 +425,10 @@ def run_scattac_precprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna
     if os.path.isfile(os.path.join(outdir, 'candidate_enhancers/region_bin_topics_otsu.pkl')) \
             and not overwrite:
         print(f"Reusing models")
-        region_bin_topics_otsu = pickle.load(open(os.path.join(outdir, 'candidate_enhancers/region_bin_topics_otsu.pkl'), 'rb'))
-        region_bin_topics_top3k = pickle.load(open(os.path.join(outdir, 'candidate_enhancers/region_bin_topics_top3k.pkl'), 'rb'))
+        region_bin_topics_otsu = pickle.load(
+            open(os.path.join(outdir, 'candidate_enhancers/region_bin_topics_otsu.pkl'), 'rb'))
+        region_bin_topics_top3k = pickle.load(
+            open(os.path.join(outdir, 'candidate_enhancers/region_bin_topics_top3k.pkl'), 'rb'))
         markers_dict = pickle.load(open(os.path.join(outdir, 'candidate_enhancers/markers_dict.pkl'), 'rb'))
     else:
         print(f"Binarizing the topics using the otsu method")
@@ -535,9 +549,29 @@ if __name__ == '__main__':
         default=False
     )
 
+    argParser.add_argument(
+        "--specie",
+        nargs='?',
+        help="Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster",
+        const="homo_sapiens",
+        default="homo_sapiens"
+    )
+
     args = argParser.parse_args()
-    # print("args=%s\n" % args)
-    # print(vars(args))
+
+    match args.specie:
+        case "homo_sapiens":
+            args.specie = "hs"
+        case "mus_musculus":
+            args.specie = "mm"
+        case "drosophila_melanogaster":
+            args.specie = "dm"
+        case _:
+            print(
+                f"Unrecongnised specie provided: {args.specie}. Please provide one of the following: homo_sapiens, mus_musculus, drosophila_melanogaster.")
+            argParser.print_help()
+            exit(1)
+
     for k, v in vars(args).items():
         print(f"Input {k}: {v}")
 
@@ -567,7 +601,7 @@ if __name__ == '__main__':
 
     # overwrite = False
 
-    run_scattac_precprocess(
+    run_scattac_preprocess(
         args.workdir,
         args.tmp,
         args.frag_file,
@@ -579,5 +613,6 @@ if __name__ == '__main__':
         args.q_value,
         args.peak_half_width,
         args.blacklist_regions,
+        args.specie,
         args.overwrite
     )
