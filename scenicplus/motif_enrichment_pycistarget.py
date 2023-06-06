@@ -106,7 +106,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--specie",
         nargs='?',
-        help="Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster and gallus_gallus.",
+        help="Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster.",
         const="homo_sapiens",
         default="homo_sapiens"
     )
