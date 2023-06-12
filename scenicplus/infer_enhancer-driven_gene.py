@@ -51,7 +51,7 @@ def test_ensembl_host(scplus_obj, host, species):
     return ov
 
 
-def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, tmp, sample_id, ensembl_specie, cpu, overwrite):
+def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, tmp, sample_id, ensembl_specie, tf_file, cpu, overwrite):
 
     # loading prev analysis
     print(f"reading scrna data {scrna_path}")
@@ -114,7 +114,7 @@ def infer_enhancer_driven_gene(work_dir, scrna_path, cistopic_path, menr_path, t
             variable=['GEX_celltype'],
             species=ensembl_specie,
             assembly='hg38',
-            tf_file=os.path.join(work_dir, 'data/utoronto_human_tfs_v_1.01.txt'),
+            tf_file=tf_file,
             save_path=os.path.join(work_dir, 'scenicplus'),
             biomart_host=biomart_host,
             upstream=[1000, 150000],
@@ -156,6 +156,7 @@ if __name__ == '__main__':
 
     # mandatory
     argParser.add_argument("-w", "--workdir", help="your working directory", required=True)
+    argParser.add_argument("-tf", "--tf_file", help="Path to file containing genes that are TFs", required=True)
     argParser.add_argument("--sample", help="The sample id", required=True)
     argParser.add_argument("--scrna", nargs='?',
                            help=f"Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad", const="", default="")
@@ -228,6 +229,7 @@ if __name__ == '__main__':
         args.tmp,
         args.sample,
         args.specie,
+        args.tf_file,
         args.cpu,
         args.overwrite
     )
