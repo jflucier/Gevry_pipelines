@@ -193,7 +193,7 @@ if __name__ == '__main__':
     if args.scrna == "":
         args.scrna = args.workdir + "/scRNA/adata.h5ad"
     if args.cistopic == "":
-        args.cistopic = args.workdir + "/scATAC/cistopic_obj2.pkl"
+        args.cistopic = args.workdir + "/scATAC/cistopic_obj.pkl"
     if args.menr == "":
         args.menr = args.workdir + "/motifs/menr.pkl"
 
