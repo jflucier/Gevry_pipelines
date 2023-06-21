@@ -314,7 +314,7 @@ def run_scattac_preprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna_
     print(
         f"{len(list(set(bc_passing_filters['10x_pbmc']) & set(scRNA_bc)))} cell barcodes pass both scATAC-seq and scRNA-seq based filtering")
 
-    if os.path.isfile(os.path.join(outdir, 'cistopic_obj.pkl')) \
+    if os.path.isfile(os.path.join(outdir, 'cistopic_obj.tmp.pkl')) \
             and not overwrite:
         print(f"Reusing cistopic object created from fragments")
         cistopic_obj = pickle.load(open(os.path.join(outdir, 'cistopic_obj.pkl'), 'rb'))
@@ -337,7 +337,7 @@ def run_scattac_preprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna_
         print(f"Dumping cistopic object to pickle")
         pickle.dump(
             cistopic_obj,
-            open(os.path.join(outdir, 'cistopic_obj.pkl'), 'wb')
+            open(os.path.join(outdir, 'cistopic_obj.tmp.pkl'), 'wb')
         )
 
     # Run topic modeling.
@@ -370,10 +370,10 @@ def run_scattac_preprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna_
             open(os.path.join(outdir, 'models/10x_pbmc_models_500_iter_LDA.pkl'), 'wb')
         )
 
-    if os.path.isfile(os.path.join(outdir, 'cistopic_obj2.pkl')) \
+    if os.path.isfile(os.path.join(outdir, 'cistopic_obj.pkl')) \
             and not overwrite:
         print(f"Reusing models")
-        cistopic_obj = pickle.load(open(os.path.join(outdir, 'cistopic_obj2.pkl'), 'rb'))
+        cistopic_obj = pickle.load(open(os.path.join(outdir, 'cistopic_obj.pkl'), 'rb'))
     else:
         print(f"Evaluate models")
         model = evaluate_models(
@@ -392,7 +392,7 @@ def run_scattac_preprocess(work_dir, tmp_dir, atac_frag_file, scrna_data, scrna_
         print(f"Dumping cistopic_obj to pickle")
         pickle.dump(
             cistopic_obj,
-            open(os.path.join(outdir, 'cistopic_obj2.pkl'), 'wb')
+            open(os.path.join(outdir, 'cistopic_obj.pkl'), 'wb')
         )
 
     ### Visualization
