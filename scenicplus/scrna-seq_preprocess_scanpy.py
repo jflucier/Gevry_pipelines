@@ -9,7 +9,7 @@ sc.settings.set_figure_params(dpi=80, frameon=False, figsize=(5, 5), facecolor='
 sc.settings.autoshow = False
 
 
-def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filter, min_genes, min_cells, min_mean,
+def run_scrna_precprocess(work_dir, in_data, mito_filter, n_counts_filter, min_genes, min_cells, min_mean,
                           max_mean,
                           min_disp, max_value, n_neighbors, leiden_res, cpu, mem):
     # scRNA-seq preprocessing using Scanpy
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     # mandatory
     argParser.add_argument("-w", "--workdir", help="your working directory", required=True)
     argParser.add_argument("-i", "--input", help="your h5 input file", required=True)
-    argParser.add_argument("-mtx", "--mtx_dir", help="directory with the mtx file from 10x genomic", required=True)
+    # argParser.add_argument("-mtx", "--mtx_dir", help="directory with the mtx file from 10x genomic", required=True)
     argParser.add_argument("--cpu", nargs='?',
                            help="Number of cpu to use", const=24,
                            type=int, default=24)
@@ -188,7 +188,6 @@ if __name__ == '__main__':
     run_scrna_precprocess(
         args.workdir,
         args.input,
-        args.mtx_dir,
         args.filter_mito,
         args.filter_n_counts,
         args.qc_min_genes,
