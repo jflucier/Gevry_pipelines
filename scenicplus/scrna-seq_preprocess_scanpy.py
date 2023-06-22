@@ -24,131 +24,45 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
 
     print(f"reading input 10x h5 file")
     adata = sc.read_10x_h5(in_data)
+    adata.var_names_make_unique()
 
-    # adata.var_names_make_unique()
+    print(f"adata: filtering by min_genes {min_genes} & min_cells {min_cells}")
+    sc.pp.filter_cells(adata, min_genes=min_genes)
+    sc.pp.filter_genes(adata, min_cells=min_cells)
 
-    def preprocess_data(d, lbl, activate_scrubblet):
+    print(f"adata: Predicting and filtering out doublets using Scrublet.")
+    sc.external.pp.scrublet(adata)
+    adata = adata[adata.obs['predicted_doublet'] == False]
 
-        # Basic quality control
-        print(f"{lbl}: filtering by min_genes {min_genes} & min_cells {min_cells}")
-        sc.pp.filter_cells(d, min_genes=min_genes)
-        sc.pp.filter_genes(d, min_cells=min_cells)
+    print(f"adata: Annotating the group of mitochondrial genes as 'mt'")
+    adata.var['mt'] = adata.var_names.str.startswith('MT-')  # annotate the group of mitochondrial genes as 'mt'
+    sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
 
-        if activate_scrubblet is True:
-            # estimates doublets
-            print(f"{lbl}: Predicting and filtering out doublets using Scrublet.")
-            sc.external.pp.scrublet(d)
-            # do the actual filtering
-            d = d[d.obs['predicted_doublet'] == False]
+    print(f"adata: Generating figure qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
+    fig, axs = plt.subplots(ncols=2, figsize=(8, 4))
+    sc.pl.scatter(adata, x='total_counts', y='pct_counts_mt', ax=axs[0], show=False)
+    sc.pl.scatter(adata, x='total_counts', y='n_genes_by_counts', ax=axs[1], show=False)
+    # draw horizontal red lines indicating thresholds.
+    axs[0].hlines(y=mito_filter, xmin=0, xmax=max(adata.obs['total_counts']), color='red', ls='dashed')
+    axs[1].hlines(y=n_counts_filter, xmin=0, xmax=max(adata.obs['total_counts']), color='red', ls='dashed')
+    fig.tight_layout()
+    plt.savefig(f"{outdir}/adata_qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
 
-        # Filter based on mitochondrial counts and total counts.
-        # annotate the group of mitochondrial genes as 'mt'
-        print(f"{lbl}: Annotating the group of mitochondrial genes as 'mt'")
-        d.var['mt'] = d.var_names.str.startswith('MT-')
-        sc.pp.calculate_qc_metrics(d, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
+    print(f"adata: Filtering all count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
+    adata = adata[adata.obs.n_genes_by_counts < n_counts_filter, :]
+    adata = adata[adata.obs.pct_counts_mt < mito_filter, :]
 
-        print(f"{lbl}: Generating figure qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
-        fig, axs = plt.subplots(ncols=2, figsize=(8, 4))
-        sc.pl.scatter(d, x='total_counts', y='pct_counts_mt', ax=axs[0], show=False)
-        sc.pl.scatter(d, x='total_counts', y='n_genes_by_counts', ax=axs[1], show=False)
-        # draw horizontal red lines indicating thresholds.
-        axs[0].hlines(y=mito_filter, xmin=0, xmax=max(d.obs['total_counts']), color='red', ls='dashed')
-        axs[1].hlines(y=n_counts_filter, xmin=0, xmax=max(d.obs['total_counts']), color='red', ls='dashed')
-        fig.tight_layout()
-        plt.savefig(f"{outdir}/{lbl}_qc_counts_filter_mt{mito_filter}_cnt{n_counts_filter}.png")
-
-        print(f"{lbl}: Filtering all count data by total counts {n_counts_filter} and mitochondrial counts {mito_filter}")
-        d = d[d.obs.n_genes_by_counts < n_counts_filter, :]
-        d = d[d.obs.pct_counts_mt < mito_filter, :]
-
-        # OPTIONNAL??? Data normalization for visualisation purpose
-        # print(f"Backup filtered data.")
-        # adata.raw = adata
-        print(f"{lbl}: Performing data normalisation")
-        d.raw = d
-        sc.pp.normalize_total(d, target_sum=1e4)
-        sc.pp.log1p(d)
-        sc.pp.highly_variable_genes(d, min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
-        d = d[:, d.var.highly_variable]
-        sc.pp.scale(d, max_value=max_value)
-        return d
-
-    adata = preprocess_data(adata, "adata", True)
-
+    print(f"adata: Performing data normalisation")
+    adata.raw = adata
+    sc.pp.normalize_total(adata, target_sum=1e4)
+    sc.pp.log1p(adata)
+    sc.pp.highly_variable_genes(adata, min_mean=min_mean, max_mean=max_mean, min_disp=min_disp)
+    adata = adata[:, adata.var.highly_variable]
+    sc.pp.scale(adata, max_value=max_value)
 
     # Cell type annotation
     # use the preprocessed data from the Scanpy tutorial as reference
     adata_ref = sc.datasets.pbmc3k_processed()
-
-    ## test to generate preprocessed dataset following Scanpy tutorial as reference... still not working well!
-
-    # print(f"adata_ref: Reading 10x genomic mtx")
-    # adata_ref = sc.read_10x_mtx(
-    #     # the directory with the `.mtx` file. Tuto data taken from
-    #     # https://cf.10xgenomics.com/samples/cell-exp/1.1.0/pbmc3k/pbmc3k_raw_gene_bc_matrices.tar.gz
-    #     mtx_dir,
-    #     # use gene symbols for the variable names (variables-axis index)
-    #     var_names='gene_symbols',
-    #     # write a cache file for faster subsequent reading
-    #     cache=True,
-    # )
-    # adata_ref.var_names_make_unique()  # this is unnecessary if using 'gene_ids'
-    # print(f"adata_ref: filtering")
-    # sc.pp.filter_cells(adata_ref, min_genes=200)
-    # sc.pp.filter_genes(adata_ref, min_cells=3)
-    # print(f"adata_ref: MT qc metric")
-    # adata_ref.var['mt'] = adata_ref.var_names.str.startswith('MT-')  # annotate the group of mitochondrial genes as 'mt'
-    # sc.pp.calculate_qc_metrics(adata_ref, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
-    # adata_ref = adata_ref[adata_ref.obs.n_genes_by_counts < 2500, :]
-    # adata_ref = adata_ref[adata_ref.obs.pct_counts_mt < 5, :]
-    # print(f"adata_ref: normalise")
-    # sc.pp.normalize_total(adata_ref, target_sum=1e4)
-    # sc.pp.log1p(adata_ref)
-    # sc.pp.highly_variable_genes(adata_ref, min_mean=0.0125, max_mean=3, min_disp=0.5)
-    # adata_ref.raw = adata_ref
-    # adata_ref = adata_ref[:, adata_ref.var.highly_variable]
-    # print(f"adata_ref: regress out")
-    # sc.pp.regress_out(adata_ref, ['total_counts', 'pct_counts_mt'])
-    # print(f"adata_ref: scale")
-    # sc.pp.scale(adata_ref, max_value=10)
-    # print(f"adata_ref: pca")
-    # sc.tl.pca(adata_ref, svd_solver='arpack')
-    # print(f"adata_ref: neighbors")
-    # sc.pp.neighbors(adata_ref, n_neighbors=10, n_pcs=40)
-    # print(f"adata_ref: louvain")
-    # sc.tl.louvain(adata_ref)
-    # print(f"adata_ref: paga")
-    # sc.tl.paga(adata_ref)
-    # sc.pl.paga(adata_ref, plot=False)  # remove `plot=False` if you want to see the coarse-grained graph
-    # print(f"adata_ref: umap")
-    # sc.tl.umap(adata_ref, init_pos='paga')
-    # sc.tl.umap(adata_ref)
-    # print(f"adata_ref: louvain 2")
-    # sc.tl.louvain(adata_ref)
-    # # sc.tl.rank_genes_groups(adata_ref, 'leiden', method='t-test')
-    # print(f"adata_ref: wilcoxon")
-    # sc.tl.rank_genes_groups(adata_ref, 'louvain', method='wilcoxon')
-    # # #sc.tl.rank_genes_groups(adata_ref, 'leiden', method='logreg')
-    # # marker_genes = ['IL7R', 'CD79A', 'MS4A1', 'CD8A', 'CD8B', 'LYZ', 'CD14',
-    # #                 'LGALS3', 'S100A8', 'GNLY', 'NKG7', 'KLRB1',
-    # #                 'FCGR3A', 'MS4A7', 'FCER1A', 'CST3', 'PPBP']
-    # # result = adata_ref.uns['rank_genes_groups']
-    # # groups = result['names'].dtype.names
-    # # pd.DataFrame(
-    # #     {
-    # #         group + '_' + key[:1]: result[key][group]
-    # #         for group in groups for key in ['names', 'pvals']
-    # #     }
-    # # )
-    # # sc.tl.rank_genes_groups(adata_ref, 'leiden', groups=['0'], reference='1', method='wilcoxon')
-    # new_cluster_names = [
-    #     'CD4 T', 'CD14 Monocytes',
-    #     'B', 'CD8 T',
-    #     'NK', 'FCGR3A Monocytes',
-    #     'Dendritic']
-    # adata_ref.rename_categories('louvain', new_cluster_names)
-    # # sc.pl.umap(adata_ref, color='leiden', legend_loc='on data', title='', frameon=False, save='.pdf')
-
 
     # use genes which are present in both assays
     print(f"Crossing count data with annotation data using gene symbols")
@@ -182,7 +96,7 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     plt.savefig(f"{outdir}/cell_subgroups.label.png", bbox_inches="tight")
 
     # Cluster cells into subgroups using the Leiden algorithm
-    print(f"Clustering cells into subgroups using the Leiden algorithm")
+    print(f"Clustering cells into subgroups using the Leiden algorithm using resolution {leiden_res}")
     sc.tl.leiden(adata, resolution=leiden_res, key_added=f'leiden_res_{leiden_res}')
     sc.pl.umap(adata, color=f'leiden_res_{leiden_res}')
     plt.savefig(f'{outdir}/cell_subgroups.leiden{leiden_res}.png', bbox_inches="tight")
@@ -194,12 +108,12 @@ def run_scrna_precprocess(work_dir, in_data, mtx_dir, mito_filter, n_counts_filt
     # leiden_to_annotation
 
     leiden_to_annotation['7'] = 'B cells 1'
-    leiden_to_annotation['12'] = 'B cells 2'
-    leiden_to_annotation = {cluster: leiden_to_annotation[cluster].replace(' ', '_') for cluster in
-                            leiden_to_annotation.keys()}
+    leiden_to_annotation['11'] = 'B cells 2'
+    leiden_to_annotation = {cluster: leiden_to_annotation[cluster].replace(' ', '_') for cluster in leiden_to_annotation.keys()}
+
     # leiden_to_annotation
     print(f"Generate cell subgroups plot by cell type cell_subgroups.celltype.png")
-    adata.obs['celltype'] = [leiden_to_annotation[cluster_id] for cluster_id in adata.obs['leiden_res_0.8']]
+    adata.obs['celltype'] = [leiden_to_annotation[cluster_id] for cluster_id in adata.obs[f'leiden_res_{leiden_res}']]
     sc.pl.umap(adata, color='celltype')
     plt.savefig(f"{outdir}/cell_subgroups.celltype.png", bbox_inches="tight")
 
