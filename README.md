@@ -119,8 +119,8 @@ This step processes single cell rna-seq. An example call would be:
 ```
 
 The following parameters are mandatory:
-- -w WORKDIR, --workdir WORKDIR: your working directory
-- -i INPUT, --input INPUT: your h5 input file
+- workdir: your working directory
+- input: your h5 input file
 
 These options are optional. **Please make sure default values are ok prior to running**
 - cpu: Number of cpu to use (default 24)
