@@ -9,6 +9,8 @@
 * [How to run](#how-to-run)
     * [Run scenicplus pipelines](#Run-scenicplus-pipelines)
       * [Step1: scRNA-seq preprocessing using Scanpy](Step1:-scRNA-seq-preprocessing-using-Scanpy)
+      * [Step2: scATAC-seq preprocessing using pycisTopic](Step2:-scATAC-seq-preprocessing-using-pycisTopic)
+      * [Step3: Motif enrichment analysis using pycistarget](Step3:-Motif-enrichment-analysis-using-pycistarget)
 
 ----
 
@@ -166,18 +168,16 @@ The following parameters are mandatory:
 - sample: The sample id
 
 These options are optional. **Please make sure default values are ok prior to running**
-tmp: Temp directory. Defaults to /tmp
-scrna: Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad
-cpu: Number of cpu to use. Defaults to 24
-shift [SHIFT]       To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73
-ext_size [EXT_SIZE]
-                    To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146
-q_value [Q_VALUE]   The q-value (minimum FDR) cutoff to call significant regions. Default: 0.05
-peak_half_width [PEAK_HALF_WIDTH]
-                    Number of base pairs that each summit will be extended in each direction. Default: 250
-blacklist_regions [BLACKLIST_REGIONS]
-                    Path to bed file containing blacklist regions (Amemiya et al., 2019). Defaults to <<workdir>>/data/hg38-blacklist.v2.bed
-overwrite [OVERWRITE]
-                    Recalculate all steps even if they completed sucessfully.
-specie [SPECIE]     Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster
+- tmp: Temp directory (default /tmp)
+- scrna: Scanpy scRNA data (default <<workdir>>/scRNA/adata.h5ad)
+- cpu: Number of cpu to use (default 24)
+- shift; To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended (default 73)
+- ext_size: To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended (default 146)
+- q_value: The q-value (minimum FDR) cutoff to call significant regions (default 0.05)
+- peak_half_width: Number of base pairs that each summit will be extended in each direction (default 250)
+- blacklist_regions: Path to bed file containing blacklist regions (Amemiya et al., 2019) (default <<workdir>>/data/hg38-blacklist.v2.bed)
+- overwrite: Recalculate all steps even if they completed sucessfully.
+- specie: Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
+
+### Step3: Motif enrichment analysis using pycistarget ###
 
