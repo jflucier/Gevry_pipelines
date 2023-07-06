@@ -485,13 +485,13 @@ if __name__ == '__main__':
     argParser.add_argument("--sample", help="The sample id", required=True)
     argParser.add_argument("--frag_file", help="Path to ATAC fragments file", required=True)
     argParser.add_argument("--tmp", nargs='?',
-                           help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
+                           help="Temp directory (default /tmp)", const="/tmp", default="/tmp")
     argParser.add_argument("--scrna", nargs='?',
-                           help=f"Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad", const="", default="")
+                           help=f"Scanpy scRNA data (default <<workdir>>/scRNA/adata.h5ad)", const="", default="")
     argParser.add_argument(
         "--cpu",
         nargs='?',
-        help="Number of cpu to use",
+        help="Number of cpu to use (default 24)",
         const=24,
         type=int,
         default=24
@@ -500,7 +500,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--shift",
         nargs='?',
-        help="To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended.Default: 73",
+        help="To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended (default 73)",
         const=73,
         type=int,
         default=73
@@ -509,7 +509,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--ext_size",
         nargs='?',
-        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended. Default: 146",
+        help="To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended (default 146)",
         const=146,
         type=int,
         default=146
@@ -518,7 +518,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--q_value",
         nargs='?',
-        help="The q-value (minimum FDR) cutoff to call significant regions. Default: 0.05",
+        help="The q-value (minimum FDR) cutoff to call significant regions (default 0.05)",
         const=0.05,
         type=float,
         default=0.05
@@ -527,7 +527,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--peak_half_width",
         nargs='?',
-        help="Number of base pairs that each summit will be extended in each direction. Default: 250",
+        help="Number of base pairs that each summit will be extended in each direction (default 250)",
         const=250,
         type=int,
         default=250
@@ -536,7 +536,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--blacklist_regions",
         nargs='?',
-        help=f"Path to bed file containing blacklist regions (Amemiya et al., 2019). Defaults to <<workdir>>/data/hg38-blacklist.v2.bed",
+        help=f"Path to bed file containing blacklist regions (Amemiya et al., 2019) (default <<workdir>>/data/hg38-blacklist.v2.bed)",
         const="",
         default=""
     )
@@ -552,7 +552,7 @@ if __name__ == '__main__':
     argParser.add_argument(
         "--specie",
         nargs='?',
-        help="Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster",
+        help="Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)",
         const="homo_sapiens",
         default="homo_sapiens"
     )
