@@ -181,3 +181,30 @@ These options are optional. **Please make sure default values are ok prior to ru
 
 ### Step3 Motif enrichment analysis using pycistarget ###
 
+This step processes single cell atac-seq. An example call would be:
+
+```
+singularity exec \
+-B /fast/:/fast/ \
+-B /home:/home \
+-e $G_PIPELINES/containers/scenicplus.sif \
+/miniconda3/envs/scenicplus/bin/python3 -W ignore motif_enrichment_pycistarget.py \
+-w $G_PIPELINES/scenicplus/test \
+--tmp /fast/tmp
+
+```
+
+The following parameters are mandatory:
+- workdir: your working directory
+
+These options are optional. **Please make sure default values are ok prior to running**
+- tmp: Temp directory (default /tmp)
+- scrna: Scanpy scRNA data (default <<workdir>>/scRNA/adata.h5ad)
+- cpu: Number of cpu to use (default 24)
+- shift; To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended (default 73)
+- ext_size: To extend reads in 5’->3’ direction to fix-sized fragment. For ATAC-seq data, a extension of 146 bp is recommended (default 146)
+- q_value: The q-value (minimum FDR) cutoff to call significant regions (default 0.05)
+- peak_half_width: Number of base pairs that each summit will be extended in each direction (default 250)
+- blacklist_regions: Path to bed file containing blacklist regions (Amemiya et al., 2019) (default <<workdir>>/data/hg38-blacklist.v2.bed)
+- overwrite: Recalculate all steps even if they completed sucessfully.
+- specie: Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)

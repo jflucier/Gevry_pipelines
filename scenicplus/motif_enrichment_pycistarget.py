@@ -101,46 +101,42 @@ if __name__ == '__main__':
     # mandatory
     argParser.add_argument("-w", "--workdir", help="your working directory", required=True)
     argParser.add_argument("--tmp", nargs='?',
-                           help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
+                           help="Temp directory (default /tmp)", const="/tmp", default="/tmp")
 
     argParser.add_argument(
         "--specie",
         nargs='?',
-        help="Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster.",
+        help="Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)",
         const="homo_sapiens",
         default="homo_sapiens"
     )
 
-    argParser.add_argument("--otsu", nargs='?', help="Path to region bin topic otsu pickle. Defaults to "
+    argParser.add_argument("--otsu", nargs='?', help="Path to region bin topic otsu pickle (default <<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl)"
                                                      "<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl",
                            const="", default="")
 
-    argParser.add_argument("--top3k", nargs='?', help="Path to region bin topic top3k pickle. Defaults to "
+    argParser.add_argument("--top3k", nargs='?', help="Path to region bin topic top3k pickle (default <<workdir>>/scATAC/candidate_enhancers/region_bin_topics_top3k.pkl)"
                                                       "<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_top3k.pkl",
                            const="", default="")
 
-    argParser.add_argument("--markers", nargs='?', help="Path to marker dictionary pickle. Defaults to "
+    argParser.add_argument("--markers", nargs='?', help="Path to marker dictionary pickle (default <<workdir>>/scATAC/candidate_enhancers/markers_dict.pkl)"
                                                         "<<workdir>>/scATAC/candidate_enhancers/markers_dict.pkl",
                            const="", default="")
 
-    argParser.add_argument("--scores_db", nargs='?', help="Path to score feather file. Defaults to "
-                                                          "<<workdir>>/data/hg38_screen_v10_clust.regions_vs_motifs"
-                                                          ".scores.feather",
+    argParser.add_argument("--scores_db", nargs='?', help="Path to score feather file (default <<workdir>>/data/hg38_screen_v10_clust.regions_vs_motifs.scores.feather)",
                            const="", default="")
 
-    argParser.add_argument("--rank_db", nargs='?', help="Path to ranking feather file. Defaults to "
-                                                        "<<workdir>>/data/hg38_screen_v10_clust.regions_vs_motifs"
-                                                        ".rankings.feather",
+    argParser.add_argument("--rank_db", nargs='?', help="Path to ranking feather file (default <<workdir>>/data/hg38_screen_v10_clust.regions_vs_motifs.rankings.feather)",
                            const="", default="")
 
-    argParser.add_argument("--motifs", nargs='?', help="Path to motif annotation table. Defaults to "
-                                                       "<<workdir>>/data/motifs-v10-nr.hgnc-m0.00001-o0.0.tbl",
+    argParser.add_argument("--motifs", nargs='?', help="Path to motif annotation table (default <<workdir>>/data/motifs-v10-nr.hgnc-m0.00001-o0.0.tbl)",
                            const="", default="")
-    argParser.add_argument("--motifs_version", nargs='?', help="Motif annotation version. Defaults to v10nr_clust",
+
+    argParser.add_argument("--motifs_version", nargs='?', help="Motif annotation version (default v10nr_clust)",
                            const="v10nr_clust", default="v10nr_clust")
 
     argParser.add_argument("--cpu", nargs='?',
-                           help="Number of cpu to use", const=24,
+                           help="Number of cpu to use (default 24)", const=24,
                            type=int, default=24)
     argParser.add_argument(
         "--overwrite",
