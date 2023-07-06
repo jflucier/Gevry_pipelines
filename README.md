@@ -1,4 +1,4 @@
-# ILL Humann custom pipeline User Manual
+# Gevry pipeline User Manual
 
 ----
 
