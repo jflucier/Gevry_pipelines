@@ -1,4 +1,4 @@
-# Gevry pipeline User Manual
+# ILL Humann custom pipeline User Manual
 
 ----
 
@@ -8,9 +8,9 @@
 * [Installation](#installation)
 * [How to run](#how-to-run)
     * [Run scenicplus pipelines](#Run-scenicplus-pipelines)
-      * [Step1: scRNA-seq preprocessing using Scanpy](Step1:-scRNA-seq-preprocessing-using-Scanpy)
-      * [Step2: scATAC-seq preprocessing using pycisTopic](Step2:-scATAC-seq-preprocessing-using-pycisTopic)
-      * [Step3: Motif enrichment analysis using pycistarget](Step3:-Motif-enrichment-analysis-using-pycistarget)
+      * [Step1: scRNA-seq preprocessing using Scanpy](#Step1:-scRNA-seq-preprocessing-using-Scanpy)
+      * [Step2: scATAC-seq preprocessing using pycisTopic](#Step2:-scATAC-seq-preprocessing-using-pycisTopic)
+      * [Step3: Motif enrichment analysis using pycistarget](#Step3:-Motif-enrichment-analysis-using-pycistarget)
 
 ----
 
