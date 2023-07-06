@@ -12,6 +12,7 @@
       * [Step2: scATAC-seq preprocessing using pycisTopic](#Step2-scATAC-seq-preprocessing-using-pycisTopic)
       * [Step3: Motif enrichment analysis using pycistarget](#Step3-Motif-enrichment-analysis-using-pycistarget)
       * [Step4: Inferring enhancer-driven Gene Regulatory Networks using SCENICplus](#Step4-Inferring-enhancer-driven-Gene-Regulatory-Networks-using-SCENICplus)
+      * [Step5: Downstream analysis](#Step5-Downstream-analysis)
 
 ----
 
@@ -53,15 +54,8 @@ singularity build --force --fakeroot scenicplus.sif scenicplus.def
 
 ## Run scenicplus pipelines ##
 
-Scenicplus analysis is composed of these steps and was developped based on the following tutorial available [here](https://scenicplus.readthedocs.io/en/latest/pbmc_multiome_tutorial.html):
-
-1. [scrna-seq_preprocess_scanpy.py](scenicplus%2Fscrna-seq_preprocess_scanpy.py): scRNA-seq preprocessing using Scanpy
-2. [scatac-seq_preprocess_pycistopic.py](scenicplus%2Fscatac-seq_preprocess_pycistopic.py): scATAC-seq preprocessing using pycisTopic
-3. [motif_enrichment_pycistarget.py](scenicplus%2Fmotif_enrichment_pycistarget.py): Motif enrichment analysis using pycistarget
-4. [infer_enhancer-driven_gene.py](scenicplus%2Finfer_enhancer-driven_gene.py): inferring enhancer-driven Gene Regulatory Networks (eGRNs) using SCENIC+
-5. [downstream_analysis.py](scenicplus%2Fdownstream_analysis.py): **Still in development**
-
-For each of these scripts, you can access script help by providing -h option like below:
+Scenicplus was developped based on the following tutorial available [here](https://scenicplus.readthedocs.io/en/latest/pbmc_multiome_tutorial.html). 
+It is composed of 5 python scripts. For each of these scripts, you can access script help by providing -h option like example below:
 
 ```
 $ singularity exec \
@@ -243,3 +237,6 @@ These options are optional. **Please make sure default values are ok prior to ru
 - specie: Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
 - overwrite: Recalculate all steps even if they completed sucessfully.
 
+### Step5 Downstream analysis ###
+
+**Still in development. Need more info to develop**
