@@ -159,7 +159,7 @@ singularity exec \
 /miniconda3/envs/scenicplus/bin/python3 -W ignore scatac-seq_preprocess_pycistopic.py \
 -w $G_PIPELINES/scenicplus/test \
 --frag_file $G_PIPELINES/scenicplus/test/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz \
---tmp /fast/tmp --sample '10x_pbmc'
+--tmp /fast_tmp --sample '10x_pbmc'
 
 ```
 
@@ -169,7 +169,7 @@ The following parameters are mandatory:
 - sample: The sample id
 
 These options are optional. **Please make sure default values are ok prior to running**
-- tmp: Temp directory (default /tmp)
+- tmp: Temp directory (default /tmp). **If running on ip34, make sur you set --tmp to /fast_tmp**
 - scrna: Scanpy scRNA data (default <<workdir>>/scRNA/adata.h5ad)
 - cpu: Number of cpu to use (default 24)
 - shift; To set an arbitrary shift in bp. For finding enriched cutting sites(such as in ATAC - seq) a shift of 73bp is recommended (default 73)
@@ -179,6 +179,7 @@ These options are optional. **Please make sure default values are ok prior to ru
 - blacklist_regions: Path to bed file containing blacklist regions (Amemiya et al., 2019) (default <<workdir>>/data/hg38-blacklist.v2.bed)
 - overwrite: Recalculate all steps even if they completed sucessfully.
 - specie: Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
+
 
 ### Step3 Motif enrichment analysis using pycistarget ###
 
@@ -191,7 +192,7 @@ singularity exec \
 -e $G_PIPELINES/containers/scenicplus.sif \
 /miniconda3/envs/scenicplus/bin/python3 -W ignore motif_enrichment_pycistarget.py \
 -w $G_PIPELINES/scenicplus/test \
---tmp /fast/tmp
+--tmp /fast_tmp
 
 ```
 
@@ -199,7 +200,7 @@ The following parameters are mandatory:
 - workdir: your working directory
 
 These options are optional. **Please make sure default values are ok prior to running**
-- tmp: Temp directory (default /tmp)
+- tmp: Temp directory (default /tmp). **If running on ip34, make sur you set --tmp to /fast_tmp**
 - specie: Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
 - otsu: Path to region bin topic otsu pickle (default <<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl)<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl
 - top3k: Path to region bin topic top3k pickle (default <<workdir>>/scATAC/candidate_enhancers/region_bin_topics_top3k.pkl)<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_top3k.pkl
@@ -210,6 +211,7 @@ These options are optional. **Please make sure default values are ok prior to ru
 - motifs_version: Motif annotation version (default v10nr_clust)
 - cpu: Number of cpu to use (default 24)
 - overwrite: Recalculate all steps even if they completed sucessfully.
+
 
 ### Step4 Inferring enhancer-driven Gene Regulatory Networks using SCENICplus ###
 
@@ -223,7 +225,7 @@ singularity exec \
 /miniconda3/envs/scenicplus/bin/python3 -W ignore infer_enhancer-driven_gene.py \
 -w $G_PIPELINES/scenicplus/test \
 -tf $G_PIPELINES/scenicplus/test/data/utoronto_human_tfs_v_1.01.txt \
---tmp /fast/tmp \
+--tmp /fast_tmp \
 --cpu 20 --sample '10x_pbmc'
 ```
 
@@ -233,14 +235,11 @@ The following parameters are mandatory:
 - sample: The sample id
 
 These options are optional. **Please make sure default values are ok prior to running**
-- tmp: Temp directory (default /tmp)
-- specie: Species from which genomic coordinates come from, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
-- otsu: Path to region bin topic otsu pickle (default <<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl)<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_otsu.pkl
-- top3k: Path to region bin topic top3k pickle (default <<workdir>>/scATAC/candidate_enhancers/region_bin_topics_top3k.pkl)<<workdir>>/scATAC/candidate_enhancers/region_bin_topics_top3k.pkl
-- markers: Path to marker dictionary pickle (default <<workdir>>/scATAC/candidate_enhancers/markers_dict.pkl)<<workdir>>/scATAC/candidate_enhancers/markers_dict.pkl
-- scores_db: Path to score feather file (default <<workdir>>/data/hg38_screen_v10_clust.regions_vs_motifs.scores.feather)
-- rank_db: Path to ranking feather file (default <<workdir>>/data/hg38_screen_v10_clust.regions_vs_motifs.rankings.feather)
-- motifs: Path to motif annotation table (default <<workdir>>/data/motifs-v10-nr.hgnc-m0.00001-o0.0.tbl)
-- motifs_version: Motif annotation version (default v10nr_clust)
+- scrna: Scanpy scRNA data (default <<workdir>>/scRNA/adata.h5ad)
+- cistopic: cistopic object data pickle data (default <<workdir>>/scATAC/cistopic_obj2.pkl)
+- menr: menr object data pickle data (default <<workdir>>/motifs/menr.pkl)
+- tmp: Temp directory (default /tmp). **If running on ip34, make sur you set --tmp to /fast_tmp**
 - cpu: Number of cpu to use (default 24)
+- specie: Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
 - overwrite: Recalculate all steps even if they completed sucessfully.
+
