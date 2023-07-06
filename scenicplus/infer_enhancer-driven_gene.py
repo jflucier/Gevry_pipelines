@@ -159,23 +159,23 @@ if __name__ == '__main__':
     argParser.add_argument("-tf", "--tf_file", help="Path to file containing genes that are TFs", required=True)
     argParser.add_argument("--sample", help="The sample id", required=True)
     argParser.add_argument("--scrna", nargs='?',
-                           help=f"Scanpy scRNA data. Defaults to <<workdir>>/scRNA/adata.h5ad", const="", default="")
+                           help=f"Scanpy scRNA data (default <<workdir>>/scRNA/adata.h5ad)", const="", default="")
     argParser.add_argument("--cistopic", nargs='?',
-                           help=f"cistopic object data pickle data. Defaults to <<workdir>>/scATAC/cistopic_obj2.pkl", const="", default="")
+                           help=f"cistopic object data pickle data (default <<workdir>>/scATAC/cistopic_obj2.pkl)", const="", default="")
     argParser.add_argument("--menr", nargs='?',
-                           help=f"menr object data pickle data. Defaults to <<workdir>>/motifs/menr.pkl",
+                           help=f"menr object data pickle data (default <<workdir>>/motifs/menr.pkl)",
                            const="", default="")
     argParser.add_argument("--tmp", nargs='?',
-                           help="Temp directory. Defaults to /tmp", const="/tmp", default="/tmp")
+                           help="Temp directory (default /tmp)", const="/tmp", default="/tmp")
 
     argParser.add_argument("--cpu", nargs='?',
-                           help="Number of cpu to use", const=24,
+                           help="Number of cpu to use (default 24)", const=24,
                            type=int, default=24)
 
     argParser.add_argument(
         "--specie",
         nargs='?',
-        help="Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster.",
+        help="Species from which data comes from. options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)",
         const="homo_sapiens",
         default="homo_sapiens"
     )
