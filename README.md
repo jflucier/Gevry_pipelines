@@ -8,9 +8,9 @@
 * [Installation](#installation)
 * [How to run](#how-to-run)
     * [Run scenicplus pipelines](#Run-scenicplus-pipelines)
-      * [Step1: scRNA-seq preprocessing using Scanpy](#Step1:-scRNA-seq-preprocessing-using-Scanpy)
-      * [Step2: scATAC-seq preprocessing using pycisTopic](#Step2:-scATAC-seq-preprocessing-using-pycisTopic)
-      * [Step3: Motif enrichment analysis using pycistarget](#Step3:-Motif-enrichment-analysis-using-pycistarget)
+      * [Step1: scRNA-seq preprocessing using Scanpy](#Step1-scRNA-seq-preprocessing-using-Scanpy)
+      * [Step2: scATAC-seq preprocessing using pycisTopic](#Step2-scATAC-seq-preprocessing-using-pycisTopic)
+      * [Step3: Motif enrichment analysis using pycistarget](#Step3-Motif-enrichment-analysis-using-pycistarget)
 
 ----
 
@@ -107,7 +107,7 @@ optional arguments:
 
 Most default values are the same as used in the tutorial. Lets now look at each step in more details:
 
-### Step1: scRNA-seq preprocessing using Scanpy ###
+### Step1 scRNA-seq preprocessing using Scanpy ###
 
 This step processes single cell rna-seq. An example call would be:
 
@@ -146,7 +146,7 @@ In its current form cell type annotation uses the preprocessed data from the Sca
 (see [here](https://scanpy.readthedocs.io/en/stable/generated/scanpy.datasets.pbmc3k_processed.html) for more information.
 Please contact to change this.
 
-### Step2: scATAC-seq preprocessing using pycisTopic ###
+### Step2 scATAC-seq preprocessing using pycisTopic ###
 
 This step processes single cell atac-seq. An example call would be:
 
@@ -179,5 +179,5 @@ These options are optional. **Please make sure default values are ok prior to ru
 - overwrite: Recalculate all steps even if they completed sucessfully.
 - specie: Species from from which genome size will be inputted to MACS2, options are: homo_sapiens, mus_musculus, drosophila_melanogaster (default homo_sapiens)
 
-### Step3: Motif enrichment analysis using pycistarget ###
+### Step3 Motif enrichment analysis using pycistarget ###
 
