@@ -130,35 +130,35 @@ if __name__ == '__main__':
     argParser.add_argument("-i", "--input", help="your h5 input file", required=True)
     # argParser.add_argument("-mtx", "--mtx_dir", help="directory with the mtx file from 10x genomic", required=True)
     argParser.add_argument("--cpu", nargs='?',
-                           help="Number of cpu to use", const=24,
+                           help="Number of cpu to use (default 24)", const=24,
                            type=int, default=24)
     argParser.add_argument("--mem", nargs='?',
-                           help="Max memery usage in Gigabyte", const=30,
+                           help="Max memory usage in Gigabyte (default 30)", const=30,
                            type=int, default=30)
 
     # qc
     argParser.add_argument("--qc_min_genes", nargs='?',
-                           help="Only keep cells with at least <<min_genes>> genes expressed", const=200,
+                           help="Only keep cells with at least <<min_genes>> genes expressed (default 200)", const=200,
                            type=int, default=200)
     argParser.add_argument("--qc_min_cells", nargs='?',
-                           help="Only keep genes which are expressed in at least <<min_cells>> cells", const=3,
+                           help="Only keep genes which are expressed in at least <<min_cells>> cells (default 3)", const=3,
                            type=int, default=3)
 
     # filter
-    argParser.add_argument("--filter_mito", nargs='?', help="Filter based on mitochondrial counts", const=25, type=int,
+    argParser.add_argument("--filter_mito", nargs='?', help="Filter based on mitochondrial counts (default 25)", const=25, type=int,
                            default=25)
-    argParser.add_argument("--filter_n_counts", nargs='?', help="Filter based on total counts", const=4300, type=int,
+    argParser.add_argument("--filter_n_counts", nargs='?', help="Filter based on total counts (default 4300)", const=4300, type=int,
                            default=4300)
 
     # normalisation
-    argParser.add_argument("--norm_min_mean", nargs='?', help="Normalisation min mean value", const=0.0125, type=float,
+    argParser.add_argument("--norm_min_mean", nargs='?', help="Normalisation min mean value (default 0.0125)", const=0.0125, type=float,
                            default=0.0125)
-    argParser.add_argument("--norm_max_mean", nargs='?', help="Normalisation max mean value", const=3, type=float,
+    argParser.add_argument("--norm_max_mean", nargs='?', help="Normalisation max mean value (default 3)", const=3, type=float,
                            default=3)
-    argParser.add_argument("--norm_min_disp", nargs='?', help="Normalisation min dispersion value", const=0.5,
+    argParser.add_argument("--norm_min_disp", nargs='?', help="Normalisation min dispersion value (default 0.5)", const=0.5,
                            type=float,
                            default=0.5)
-    argParser.add_argument("--norm_max_value", nargs='?', help="Clip (truncate) to this value after scaling", const=10,
+    argParser.add_argument("--norm_max_value", nargs='?', help="Clip (truncate) to this value after scaling (default 10)", const=10,
                            type=float,
                            default=10)
 
@@ -168,10 +168,10 @@ if __name__ == '__main__':
                                 "neighboring data points) used for manifold approximation. "
                                 "Larger values result in more global views of the manifold, "
                                 "while smaller values result in more local data being "
-                                "preserved. ",
+                                "preserved  (default 10) ",
                            const=10, type=int, default=10)
     argParser.add_argument("--ct_annot_leiden_res", nargs='?', help="parameter value controlling the coarseness of the "
-                                                                    "clustering. Higher values lead to more clusters.",
+                                                                    "clustering. Higher values lead to more clusters (default 0.8)",
                            const=0.8, type=float, default=0.8)
 
     args = argParser.parse_args()
